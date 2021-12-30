@@ -59,7 +59,7 @@ func (s *Server)handler(conn net.Conn)(err error){
 		cerr:=conn.Close
 		if cerr!=nil{
 			if err==nil{
-				err=errors.New("connection close")
+				err=errors.New("connection not close")
 				return
 			}
 			log.Print(err)
@@ -93,8 +93,15 @@ func (s *Server)handler(conn net.Conn)(err error){
 	if path!="" {
 		log.Print(path)
 	}
-	if handlerFunc,found:=s.handlers[path];found {
-		handlerFunc(conn)
+	finded:=false
+	for keyPath, v := range s.handlers {
+		if keyPath==path {
+			finded=true
+			v(conn)
+		}
+	}
+	if !finded {
+		conn.Close()
 	}
 	return err
 }
